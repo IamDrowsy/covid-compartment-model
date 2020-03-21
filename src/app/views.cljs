@@ -3,13 +3,41 @@
             [reagent.core :as r]
             [goog.string :as gstring]
             [app.model.core :as m]
-            [app.model.protocol :as p]))
+            [app.model.protocol :as p]
+            [app.conf.colors :refer [compartment->color]]))
 
 (defonce app-state
   (r/atom {}))
 
 (defn init []
   (reset! app-state {:model (m/get-model :seir)}))
+
+(defn bar-chart [app-state]
+  (let [T_S   10
+        T_max 42
+        values [{:severity :normal    :state :S     :days T_S}
+                {:severity :normal    :state :E     :days 2.5}
+                {:severity :normal    :state :I     :days 10}
+                {:severity :normal    :state :R     :days (- T_max T_S 2.5 10)}
+                {:severity :hospital  :state :blank :days (+ T_S 9)}
+                {:severity :hospital  :state :K     :days 14}
+                {:severity :hospital  :state :R     :days (- T_max T_S 9 14)}
+                {:severity :intensive :state :blank :days (+ T_S 10)}
+                {:severity :intensive :state :X     :days 10}
+                {:severity :intensive :state :R     :days (- T_max T_S 10 10)}
+                {:severity :lethal    :state :blank :days (+ T_S 20)}
+                {:severity :lethal    :state :D     :days (- T_max T_S 10 10)}]
+        values+order (map-indexed (fn [i v] (assoc v :order i)) values)]
+       {:data {:values values+order}
+        :mark "bar"
+        :encoding {:y {:field :severity :type "nominal"
+                       :sort {:field :order :op :min}}
+                   :x {:aggregate "sum" :field :days :type "quantitative"}
+                   :order {}
+                   :color {:field :state :type "nominal"
+                           :scale {:range (map #(get compartment->color % "white") [:S :E :I :R
+                                                                                    :blank :K :X :D])}
+                           :sort {}}}}))
 
 
 (defn line-plot [state]
@@ -56,6 +84,7 @@
   (p/variables (:model @app-state))
   [:div
    [header]
+   [oz.core/vega-lite (bar-chart @app-state)]
    [oz.core/vega-lite (line-plot @app-state)]
    [:div 
     (into [:table] (mapv (partial variable-slider @app-state) (p/variables (:model @app-state))))]

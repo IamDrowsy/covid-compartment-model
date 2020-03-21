@@ -1,0 +1,7 @@
+node_modules
+yarn.lock
+.shadow-cljs
+public/js
+target
+.nrepl-port
+package-lock.json

@@ -1,0 +1,34 @@
+{
+  "name": "shadoz",
+  "version": "0.0.1",
+  "description": "Basic example of oz lib working with shadow-cljs and reagent",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ivanminutillo/reagent-shadow-oz-example"
+  },
+  "author": {
+    "name": "Ivan minutillo",
+    "email": "bernini@inventati.org"
+  },
+  "license": "EPL-2.0",
+  "scripts": {
+    "dev": "shadow-cljs watch app",
+    "release": "shadow-cljs release app",
+    "server": "shadow-cljs server",
+    "clean": "rm -rf target && rm -rf public/js",
+    "clean-win": "rmdir /s /q public/js & rmdir /s /q target"
+  },
+  "dependencies": {
+    "calculess": "^1.0.2",
+    "create-react-class": "^15.6.3",
+    "react": "^16.5.2",
+    "react-dom": "^16.5.2",
+    "sd.js": "^5.2.8",
+    "vega": "^5.3.5",
+    "vega-embed": "^4.0.0",
+    "vega-lite": "^3.2.1"
+  },
+  "devDependencies": {
+    "shadow-cljs": "^2.6.10"
+  }
+}

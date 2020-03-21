@@ -6,8 +6,10 @@
             [app.model.protocol :as p]
             [app.conf.colors :refer [compartment->color]]))
 
-(def app-state
+(defonce app-state
   (r/atom {:model (m/get-model :seikr)}))
+
+(reset! app-state {:model (m/get-model :seikr)})
 
 (defn bar-chart [app-state]
   (let [T_S   10
@@ -39,22 +41,42 @@
 
 (defn line-plot [state]
   (let [values (m/->plot-values (:model state))]
-    {:layer [
-               {:data {:values values}
-                :width 600
-                :height 500
-                :encoding {:x {:field "x"
-                               :type "quantitative"
-                               :axis {:title "Days"}}
-                           :y {:field "y"
-                               :type "quantitative"
-                               :stack true
-                               :axis {:title "People"}}
-                           :color {:field "col" :type "nominal"
-                                   :scale {:range (vals (sort-by key (p/colors (:model state))))}
-                                   :legend {:title "Legende"}}
-                           :order {:field "order" :type "ordinal"}}
-                :mark "area"}]}))
+    {:layer [{:data {:values values}
+              :transform [{:filter {:not {:field "col" :oneOf ["const"]}}}]
+              :width 600
+              :height 500
+              :encoding {:x {:field "x"
+                             :type "quantitative"
+                             :axis {:title "Days"}}
+                         :y {:field "y"
+                             :type "quantitative"
+                             :stack true
+                             :scale {:domain [0 10000]}
+                             :axis {:title "People"}}
+                         :color {:field "col" :type "nominal"
+                                 :scale {:range (vals (sort-by key (p/colors (:model state))))}
+                                 :legend {:title "Legende"}}
+                         :order {:field "order" :type "ordinal"}}
+              :mark {:type "area"
+                     :clip true}}
+             {:data {:values values}
+              :width 600
+              :heigh 500
+              :transform [{:filter {:field "col" :oneOf ["const"]}}]
+              :encoding {:x {:field "x"
+                             :type "quantitative"}
+                         :y {:field "KXC"
+                             :type "quantitative"}}
+              :mark "line"}
+             {:data {:values values}
+              :width 600
+              :heigh 500
+              :transform [{:filter {:field "col" :oneOf ["const"]}}]
+              :encoding {:x {:field "x"
+                             :type "quantitative"}
+                         :y {:field "XC"
+                             :type "quantitative"}}
+              :mark "line"}]}))
 
 (defn header
   []

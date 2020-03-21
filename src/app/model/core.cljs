@@ -9,4 +9,5 @@
     :seikr (seikr/init)))
 
 (defn ->plot-values [model]
-  (apply concat (map-indexed (fn [index model] (p/->plot-point model index)) (take (:steps model) (iterate p/step model)))))
+  (reduce into (map-indexed (fn [index model] (p/->plot-point model index)) (take-while #(< 0.5 (+ (:I %) (:E %)))
+                                                                                        (iterate p/step model)))))

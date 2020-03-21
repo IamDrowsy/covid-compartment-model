@@ -19,7 +19,6 @@
     "clean-win": "rmdir /s /q public/js & rmdir /s /q target"
   },
   "dependencies": {
-    "calculess": "^1.0.2",
     "create-react-class": "^15.6.3",
     "react": "^16.5.2",
     "react-dom": "^16.5.2",

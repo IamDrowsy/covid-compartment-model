@@ -34,6 +34,15 @@
   [:div
    [:h1 "SEIR Model"]])
 
+(defn sources
+  []
+  [:div [:h3 "Sources"]
+    [:ul [:li [:a {:href "https://medium.com/@tomaspueyo/coronavirus-act-today-or-people-will-die-f4d3d9cd99ca"} "coronavirus-act-today-or-people-will-die"]]]
+    [:ul [:li [:a {:href "https://www.rki.de/DE/Content/InfAZ/N/Neuartiges_Coronavirus/Modellierung_Deutschland.pdf?__blob=publicationFile"} "RKI Modellierung von Beispielszenarien der SARS-CoV-2-Epidemie 2020"]]]
+    [:ul [:li [:a {:href "https://en.wikipedia.org/wiki/Compartmental_models_in_epidemiology#The_SEIR_model"} "SEIR model"]]]
+    [:ul [:li [:a {:href "https://web.br.de/interaktiv/corona-simulation/"} "corona-simulation"]]]
+    [:ul [:li [:a {:href "https://www.ndr.de/nachrichten/info/podcast4684.html"} "Das Coronavirus-Update mit Christian Drosten"]]]])
+
 (defn set-fn [key]
   (fn [event]
     (swap! app-state assoc-in [:model key] (js/parseFloat (.-value (.-target event))))))
@@ -50,5 +59,6 @@
    [oz.core/vega-lite (line-plot @app-state)]
    [:div 
     (into [:table] (mapv (partial variable-slider @app-state) (p/variables (:model @app-state))))]
-   [:div (gstring/format "R0=T_r/T_c=%.2f" (/ (:T_r (:model @app-state)) (:T_c (:model @app-state))))]])
+   [:div (gstring/format "R0=T_r/T_c=%.2f" (/ (:T_r (:model @app-state)) (:T_c (:model @app-state))))]
+   (sources)])
 

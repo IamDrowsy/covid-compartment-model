@@ -33,9 +33,9 @@
    {:x index :y R :col "R" :order 2}])
 
 (def initial 
-  {:T_c 4
+  {:T_c 3.6
    :T_r 12
-   :steps 100
+   :steps 200
    :S S_0 :I I_0 :R R_0 :E E_0})
 
 (defn variables [_]

@@ -111,12 +111,25 @@
   (p/variables (:model @app-state))
   [:div
    [header]
+   [:h4 "Üblicher Krankheitsverlauf eines Patienten"]
+   [:p [:i "*angenommen er steckt sich am 10. Tag an"]]
    [oz.core/vega-lite (bar-chart @app-state {:whitelist-severity #{:normal}})]
+   [:h4 "Verteilung der Krankheitszustände einer Gesellschaft über den Verlauf der Epidemie"]
+   [:p [:i "-> Exponentielles Wachstum erklären"]]
+   [:p [:i "-> Sättigung (erst) wenn die meisten die Krankheit überstanden und deshalb immun sind"]]
    [oz.core/vega-lite (line-plot @app-state)]
+   [:p [:i "-> Indem T_c (die durchschnittliche Zeit in Tagen, zwischen zwei Ansteckungen durch einen Infizierten) gesenkt wird, kann die Kurve abgeflacht und der Zeitpunkt an dem das Maximum Erkrankter erreicht wird herausgezögert werden"]]
+   [:h4 "Nicht alle Patienten sind schwach symptomatisch"]
+   [:p [:i "TODO Wahrscheinlichkeiten ins Diagramm einzeichnen"]]
+   [:p [:i "* Etwa 5% der Patienten müssen ins Krankenhaus; davon etwa 25% auf die Intensivstation; davon etwa 50% sterben"]]
    [oz.core/vega-lite (bar-chart @app-state)]
-   [oz.core/vega-lite (line-plot @app-state {:y_max 10000})]
-   [:div 
-    (into [:table] (mapv (partial variable-slider @app-state) (p/variables (:model @app-state))))]
-   [:div (gstring/format "R0=T_r/T_c=%.2f" (/ (:T_r (:model @app-state)) (:T_c (:model @app-state))))]
+   [:h4 "Das Gesundheitssystem wird an seine Kapazitätsgrenzen kommen"]
+   [:p [:i "-> Wenn es nicht gelingt, die Ansteckungsrate hinreichend abzusenken, werden viele Patienten nicht die erforderliche Behandlung bekommen können"]]
+   [oz.core/vega-lite (line-plot @app-state {:y_max 30000})]
+   [:p [:i "-> Durch verlangsammen der Epidemie kann der Kollaps der Versorgung verhindert werden"]]
+   [:p [:i "-> jeder einzelnen von uns ist gefragt…"]]
+   [:div (into [:table] (mapv (partial variable-slider @app-state) (p/variables (:model @app-state))))
+         [:div (gstring/format "R0=T_r/T_c=%.2f" (/ (:T_r (:model @app-state)) (:T_c (:model @app-state))))]]
+   [:h4 "TODO Verzögerung der Epidemie, so dass neue wirksamere Therapien und Impfungen entwickelt werden können"]
    (sources)])
 

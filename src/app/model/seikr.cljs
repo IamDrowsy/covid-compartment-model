@@ -83,7 +83,7 @@
 
 (defn variables [_]
   [{:key :T_c :min 1 :max 20 :step 0.1}
-   {:key :T_r :min 10 :max 15 :step 0.5}])
+   #_{:key :T_r :min 10 :max 15 :step 0.5}])
 
 (defn init []
   (with-meta initial

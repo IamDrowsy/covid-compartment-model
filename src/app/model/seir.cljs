@@ -35,7 +35,7 @@
 (def initial 
   {:T_c 3.6
    :T_r 12
-   :steps 200
+   :steps 300
    :S S_0 :I I_0 :R R_0 :E E_0})
 
 (defn variables [_]
@@ -43,8 +43,15 @@
    {:key :T_r :min 10 :max 15 :step 0.5}
    {:key :steps :min 20 :max 600 :step 1}])
 
+(defn colors [_]
+  {:S "blue"
+   :E "yellow"
+   :I "red"
+   :R "green"})
+
 (defn init []
   (with-meta initial
     {`p/step step
      `p/->plot-point ->plot-point
-     `p/variables variables}))
+     `p/variables variables
+     `p/colors colors}))

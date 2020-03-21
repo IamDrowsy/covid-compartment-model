@@ -6,11 +6,8 @@
             [app.model.protocol :as p]
             [app.conf.colors :refer [compartment->color]]))
 
-(defonce app-state
-  (r/atom {}))
-
-(defn init []
-  (reset! app-state {:model (m/get-model :seir)}))
+(def app-state
+  (r/atom {:model (m/get-model :seikr)}))
 
 (defn bar-chart [app-state]
   (let [T_S   10
@@ -47,14 +44,16 @@
                 :width 600
                 :height 500
                 :encoding {:x {:field "x"
+                               :type "quantitative"
                                :axis {:title "Days"}}
                            :y {:field "y"
+                               :type "quantitative"
                                :stack true
                                :axis {:title "People"}}
                            :color {:field "col" :type "nominal"
-                                   :scale {:scheme ["yellow" "red" "green" "blue"]}
+                                   :scale {:range (vals (sort-by key (p/colors (:model state))))}
                                    :legend {:title "Legende"}}
-                           :order {:field "order" :type "nominal"}}
+                           :order {:field "order" :type "ordinal"}}
                 :mark "area"}]}))
 
 (defn header

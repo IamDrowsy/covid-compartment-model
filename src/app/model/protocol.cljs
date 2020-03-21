@@ -4,4 +4,5 @@
   :extend-via-metadata true
   (step [this])
   (->plot-point [this index])
-  (variables [this]))
+  (variables [this])
+  (colors [this]))

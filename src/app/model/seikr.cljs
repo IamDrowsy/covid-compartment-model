@@ -64,9 +64,9 @@
                (reverse [{:x index :y S :key :S}
                          {:x index :y E :key :E}
                          {:x index :y R :key :R}
-                         {:x index :y D :key :D}
                          {:x index :y R>KC :key :R>KC}
                          {:x index :y R>XC :key :R>XC}
+                         {:x index :y D :key :D}
                          {:x index :y I :key :I}
                          {:x index :y K>KC :key :K>KC}
                          {:x index :y X>XC :key :X>XC}

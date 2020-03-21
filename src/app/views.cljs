@@ -4,7 +4,8 @@
             [goog.string :as gstring]
             [app.model.core :as m]
             [app.model.protocol :as p]
-            [app.conf.colors :refer [compartment->color]]))
+            [app.conf.colors :refer [compartment->color]]
+            [app.conf.labels :refer [label]]))
 
 (defonce app-state
   (r/atom {:model (m/get-model :seikr)}))
@@ -26,14 +27,14 @@
                 {:severity :intensive :state :R     :days (- T_max T_S 10 10)}
                 {:severity :lethal    :state :blank :days (+ T_S 20)}
                 {:severity :lethal    :state :D     :days (- T_max T_S 10 10)}]
-        values+order (map-indexed (fn [i v] (assoc v :order i)) values)]
+        values+order (map-indexed (fn [i v] (assoc v :order i :label (label (:state v)))) values)]
        {:data {:values values+order}
         :mark "bar"
         :encoding {:y {:field :severity :type "nominal"
                        :sort {:field :order :op :min}}
                    :x {:aggregate "sum" :field :days :type "quantitative"}
                    :order {}
-                   :color {:field :state :type "nominal"
+                   :color {:field :label :type "nominal"
                            :scale {:range (map #(get compartment->color % "white") [:S :E :I :R
                                                                                     :blank :K :X :D])}
                            :sort {}}}}))
@@ -41,10 +42,10 @@
 
 (defn line-plot [state]
   (let [values (m/->plot-values (:model state))
-        cols (map keyword (distinct (map :col values)))
-        consts (filter #(= (:col %) "const") values)]
+        key->label (zipmap (map :key values) (map :label values))
+        consts (filter #(= (:label %) "const") values)]
     {:layer [{:data {:values values}
-              :transform [{:filter {:not {:field "col" :oneOf ["const"]}}}]
+              :transform [{:filter {:not {:field "label" :oneOf ["const"]}}}]
               :width 600
               :height 500
               :encoding {:x {:field "x"
@@ -55,9 +56,11 @@
                              :stack true
                              :scale {:domain [0 10000]}
                              :axis {:title "People"}}
-                         :color {:field "col" :type "nominal"
-                                 :scale {:range (vals (sort-by key (select-keys compartment->color cols)))}
-                                 :legend {:title "Legende"}}
+                         :color {:field "label" :type "nominal"
+                                 :scale {:range (vals (sort-by #(key->label (key %)) (select-keys compartment->color (keys key->label))))}
+                                 :legend {:title "Legende" :orient :right
+                                          :labelLimit 300
+                                          :values (map label [:S :E :I :K<KC :K>KC :R>KC :X<XC :X>XC :R>XC :R :D])}}
                          :order {:field "order" :type "ordinal"}}
               :mark {:type "area"
                      :clip true}}

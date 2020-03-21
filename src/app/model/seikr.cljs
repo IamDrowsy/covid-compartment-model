@@ -1,5 +1,6 @@
 (ns app.model.seikr
-  (:require [app.model.protocol :as p]))
+  (:require [app.model.protocol :as p]
+            [app.conf.labels :refer [label]]))
 
 ;Total Number
 (def N 500000)
@@ -59,19 +60,19 @@
                   :XC XC})))
 
 (defn ->plot-point [{:keys [S E I K<KC K>KC X<XC X>XC D R R>KC R>XC KC XC KXC ]} index]
-  (map-indexed (fn [index m] (assoc m :order index))
-               (reverse [{:x index :y S :col "S"}
-                         {:x index :y E :col "E"}
-                         {:x index :y R :col "R"}
-                         {:x index :y D :col "D"}
-                         {:x index :y R>KC :col "R>KC"}
-                         {:x index :y R>XC :col "R>XC"}
-                         {:x index :y I :col "I"}
-                         {:x index :y K>KC :col "K>KC"}
-                         {:x index :y X>XC :col "X>XC"}
-                         {:x index :y K<KC :col "K<KC"}
-                         {:x index :y X<XC :col "X<XC"}
-                         {:x index :KC KC :XC XC :KXC KXC :col "const"}])))
+  (map-indexed (fn [index m] (assoc m :order index :label (label (:key m) "const")))
+               (reverse [{:x index :y S :key :S}
+                         {:x index :y E :key :E}
+                         {:x index :y R :key :R}
+                         {:x index :y D :key :D}
+                         {:x index :y R>KC :key :R>KC}
+                         {:x index :y R>XC :key :R>XC}
+                         {:x index :y I :key :I}
+                         {:x index :y K>KC :key :K>KC}
+                         {:x index :y X>XC :key :X>XC}
+                         {:x index :y K<KC :key :K<KC}
+                         {:x index :y X<XC :key :X<XC}
+                         {:x index :KC KC :XC XC :KXC KXC}])))
 
 (def initial 
   {:T_c 4

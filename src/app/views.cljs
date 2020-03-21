@@ -41,6 +41,7 @@
 
 (defn line-plot [state]
   (let [values (m/->plot-values (:model state))
+        cols (map keyword (distinct (map :col values)))
         consts (filter #(= (:col %) "const") values)]
     {:layer [{:data {:values values}
               :transform [{:filter {:not {:field "col" :oneOf ["const"]}}}]
@@ -55,7 +56,7 @@
                              :scale {:domain [0 10000]}
                              :axis {:title "People"}}
                          :color {:field "col" :type "nominal"
-                                 :scale {:range (vals (sort-by key (p/colors (:model state))))}
+                                 :scale {:range (vals (sort-by key (select-keys (p/colors (:model state)) cols)))}
                                  :legend {:title "Legende"}}
                          :order {:field "order" :type "ordinal"}}
               :mark {:type "area"

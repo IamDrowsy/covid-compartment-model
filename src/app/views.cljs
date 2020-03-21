@@ -12,7 +12,7 @@
 
 (reset! app-state {:model (m/get-model :seikr)})
 
-(defn bar-chart [app-state]
+(defn bar-chart [app-state &[{:keys [whitelist-severity]}]]
   (let [T_S   10
         T_max 42
         values [{:severity :normal    :state :S     :days T_S}
@@ -26,9 +26,12 @@
                 {:severity :intensive :state :X     :days 10}
                 {:severity :intensive :state :R     :days (- T_max T_S 10 10)}
                 {:severity :lethal    :state :blank :days (+ T_S 20)}
-                {:severity :lethal    :state :D     :days (- T_max T_S 10 10)}]
-        values+order (map-indexed (fn [i v] (assoc v :order i :label (label (:state v)))) values)]
-       {:data {:values values+order}
+                {:severity :lethal    :state :D     :days (- T_max T_S 10 10)}]]
+       {:data {:values (->> values
+                            (map-indexed (fn [i v] (assoc v :order i :label (label (:state v)))))
+                            (filter (if (empty? whitelist-severity)
+                                        (constantly true)
+                                        #((set whitelist-severity) (:severity %)))))}
         :mark "bar"
         :encoding {:y {:field :severity :type "nominal"
                        :sort {:field :order :op :min}}
@@ -40,7 +43,7 @@
                            :sort {}}}}))
 
 
-(defn line-plot [state]
+(defn line-plot [state &[{:keys [y_max]}]]
   (let [values (m/->plot-values (:model state))
         key->label (zipmap (map :key values) (map :label values))
         consts (filter #(= (:label %) "const") values)]
@@ -54,7 +57,7 @@
                          :y {:field "y"
                              :type "quantitative"
                              :stack true
-                             :scale {:domain [0 10000]}
+                             :scale (if-not y_max {} {:domain [0 y_max]})
                              :axis {:title "People"}}
                          :color {:field "label" :type "nominal"
                                  :scale {:range (vals (sort-by #(key->label (key %)) (select-keys compartment->color (keys key->label))))}
@@ -108,8 +111,10 @@
   (p/variables (:model @app-state))
   [:div
    [header]
-   [oz.core/vega-lite (bar-chart @app-state)]
+   [oz.core/vega-lite (bar-chart @app-state {:whitelist-severity #{:normal}})]
    [oz.core/vega-lite (line-plot @app-state)]
+   [oz.core/vega-lite (bar-chart @app-state)]
+   [oz.core/vega-lite (line-plot @app-state {:y_max 10000})]
    [:div 
     (into [:table] (mapv (partial variable-slider @app-state) (p/variables (:model @app-state))))]
    [:div (gstring/format "R0=T_r/T_c=%.2f" (/ (:T_r (:model @app-state)) (:T_c (:model @app-state))))]

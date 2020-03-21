@@ -84,21 +84,8 @@
   [{:key :T_c :min 1 :max 20 :step 0.1}
    {:key :T_r :min 10 :max 15 :step 0.5}])
 
-(defn colors [_] {:S "blue"
-                  :E "blue"
-                  :I "#fdae6b"
-                  :K<KC "orange"
-                  :K>KC "darkorange"
-                  :X<XC "red"
-                  :X>XC "darkred"
-                  :R>KC "violet"
-                  :R>XC "purple"
-                  :R "green"
-                  :D "black"})
-
 (defn init []
   (with-meta initial
     {`p/step step
      `p/->plot-point ->plot-point
-     `p/variables variables
-     `p/colors colors}))
+     `p/variables variables}))

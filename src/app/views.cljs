@@ -56,7 +56,7 @@
                              :scale {:domain [0 10000]}
                              :axis {:title "People"}}
                          :color {:field "col" :type "nominal"
-                                 :scale {:range (vals (sort-by key (select-keys (p/colors (:model state)) cols)))}
+                                 :scale {:range (vals (sort-by key (select-keys compartment->color cols)))}
                                  :legend {:title "Legende"}}
                          :order {:field "order" :type "ordinal"}}
               :mark {:type "area"

@@ -41,15 +41,8 @@
   [{:key :T_c :min 1 :max 20 :step 0.1}
    {:key :T_r :min 10 :max 15 :step 0.5}])
 
-(defn colors [_]
-  {:S "blue"
-   :E "yellow"
-   :I "red"
-   :R "green"})
-
 (defn init []
   (with-meta initial
     {`p/step step
      `p/->plot-point ->plot-point
-     `p/variables variables
-     `p/colors colors}))
+     `p/variables variables}))

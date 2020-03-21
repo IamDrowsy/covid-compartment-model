@@ -1,14 +1,14 @@
 {
-  "name": "shadoz",
+  "name": "covid-compartment-model",
   "version": "0.0.1",
-  "description": "Basic example of oz lib working with shadow-cljs and reagent",
+  "description": "Visualisation of a covid compartment model",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ivanminutillo/reagent-shadow-oz-example"
+    "url": "https://github.com/IamDrowsy/covid-compartment-model.git"
   },
   "author": {
-    "name": "Ivan minutillo",
-    "email": "bernini@inventati.org"
+    "name": "Albrecht Schmidt",
+    "email": "github@albrechtschmidt.de"
   },
   "license": "EPL-2.0",
   "scripts": {
@@ -22,7 +22,6 @@
     "create-react-class": "^15.6.3",
     "react": "^16.5.2",
     "react-dom": "^16.5.2",
-    "sd.js": "^5.2.8",
     "vega": "^5.3.5",
     "vega-embed": "^4.0.0",
     "vega-lite": "^3.2.1"

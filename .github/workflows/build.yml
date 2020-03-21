@@ -2,7 +2,9 @@ name: Build minified js
 
 on: 
   push:
-    branches: [ master ]
+    tags:
+      - 'v*'
+      
 jobs:
   build:
     name: Create minified js

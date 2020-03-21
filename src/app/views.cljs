@@ -40,7 +40,8 @@
 
 
 (defn line-plot [state]
-  (let [values (m/->plot-values (:model state))]
+  (let [values (m/->plot-values (:model state))
+        consts (filter #(= (:col %) "const") values)]
     {:layer [{:data {:values values}
               :transform [{:filter {:not {:field "col" :oneOf ["const"]}}}]
               :width 600
@@ -59,19 +60,17 @@
                          :order {:field "order" :type "ordinal"}}
               :mark {:type "area"
                      :clip true}}
-             {:data {:values values}
+             {:data {:values consts}
               :width 600
               :heigh 500
-              :transform [{:filter {:field "col" :oneOf ["const"]}}]
               :encoding {:x {:field "x"
                              :type "quantitative"}
                          :y {:field "KXC"
                              :type "quantitative"}}
               :mark "line"}
-             {:data {:values values}
+             {:data {:values consts}
               :width 600
               :heigh 500
-              :transform [{:filter {:field "col" :oneOf ["const"]}}]
               :encoding {:x {:field "x"
                              :type "quantitative"}
                          :y {:field "XC"

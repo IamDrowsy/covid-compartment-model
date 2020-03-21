@@ -37,7 +37,7 @@
                   :I (+ I dI) :dI dI
                   :R (+ R dR) :dR dR})))
 
-(defonce app-state 
+(defonce app-state
   (r/atom {}))
 
 (defn init []

@@ -9,4 +9,5 @@
 
 (defn ^:export main
   []
+  (views/init)
   (start))

@@ -2,7 +2,7 @@
   (:require [app.model.protocol :as p]
             [app.conf.labels :refer [label]]))
 
-;Total Number
+;Total Population Number
 (def N 500000)
 ; Number of Exposed
 (def E_0 1)
@@ -14,24 +14,18 @@
 (def R_0 0)
 ; Incubation Period
 (def a (/ 1 2.5))
-; Probability to need med care
-(def p_I->K 0.045)
-; Probability to need ICU if in med care
-(def p_K->X 0.25)
-; Probability to die if in ICU
-(def p_X->D 0.5)
 
 ; Medcare capacity
 (def KC 2000)
 ; ICU capacity
 (def XC 200)
 
-(def p_I->X (* p_I->K p_K->X))
-(def p_R->D (* p_I->X p_X->D))
-
-(defn step [{:keys [S E IKX RD K>KC R>KC X>XC R>XC T_c T_r KC XC] :as state}]
+(defn step [{:keys [T_c T_r p_I->K p_K->X p_X->D p_I->X p_R->D KC XC
+                    S E IKX RD K>KC R>KC X>XC R>XC ] :as state}]
   (let [β (/ 1.0 T_c)
         γ (/ 1.0 T_r)
+        p_I->X (or p_I->X (* p_I->K p_K->X))
+        p_R->D (or p_R->D (* p_I->X p_X->D))
         dS (- (* β IKX S (/ 1 N)))
         dE (- 0 dS (* a E))
         dR>KC (* γ K>KC)
@@ -59,8 +53,18 @@
                   :KXC (+ XC KC)
                   :XC XC})))
 
-(defn ->plot-point [{:keys [S E I K<KC K>KC X<XC X>XC D R R>KC R>XC KC XC KXC ]} index]
-  (map-indexed (fn [index m] (assoc m :order index :label (label (:key m) "const")))
+(defn keys-for-tooltip [all]
+  (reduce (fn [result k]
+            (let [num (Math/round (all k 0))]
+              (if (label k)
+                (assoc result (label k)
+                       num)
+                result)))
+          {}
+          (keys all)))
+
+(defn ->plot-point [{:keys [S E I K<KC K>KC X<XC X>XC D R R>KC R>XC KC XC KXC ] :as all} index]
+  (map-indexed (fn [index m] (merge (keys-for-tooltip all) (assoc m :order index :label (label (:key m) "const"))))
                (reverse [{:x index :y S :key :S}
                          {:x index :y E :key :E}
                          {:x index :y R :key :R}
@@ -79,6 +83,9 @@
    :T_r 12
    :KC KC
    :XC XC
+   :p_I->K 0.045
+   :p_K->X 0.25
+   :p_X->D 0.5
    :S S_0 :I I_0 :R R_0 :E E_0})
 
 (defn variables [_]

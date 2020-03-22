@@ -7,10 +7,16 @@
             [app.conf.colors :refer [compartment->color]]
             [app.conf.labels :refer [label]]))
 
-(defonce app-state
-  (r/atom {:model (m/get-model :seikr)}))
+(defn initial-state []
+  (let [m (m/get-model :seikr)]
+    {:simple-model (merge m {:p_I->K 0
+                             :p_R->D 0.005})
+     :model m}))
 
-(reset! app-state {:model (m/get-model :seikr)})
+(defonce app-state
+  (r/atom (initial-state)))
+
+(reset! app-state (initial-state))
 
 (defn bar-chart [app-state &[{:keys [whitelist-severity]}]]
   (let [T_S   10
@@ -43,10 +49,10 @@
                            :sort {}}}}))
 
 
-(defn line-plot [state &[{:keys [y_max]}]]
-  (let [values (m/->plot-values (:model state))
+(defn line-plot [model &[{:keys [y_max visible-keys show-capacity]}]]
+  (let [values (m/->plot-values model)
         key->label (zipmap (map :key values) (map :label values))
-        consts (filter #(= (:label %) "const") values)]
+        consts (if show-capacity (filter #(= (:label %) "const") values) [])]
     {:layer [{:data {:values values}
               :transform [{:filter {:not {:field "label" :oneOf ["const"]}}}]
               :width 600
@@ -63,8 +69,9 @@
                                  :scale {:range (vals (sort-by #(key->label (key %)) (select-keys compartment->color (keys key->label))))}
                                  :legend {:title "Legende" :orient :right
                                           :labelLimit 300
-                                          :values (map label [:S :E :I :K<KC :K>KC :R>KC :X<XC :X>XC :R>XC :R :D])}}
-                         :order {:field "order" :type "ordinal"}}
+                                          :values (map label visible-keys)}}
+                         :order {:field "order" :type "ordinal"}
+                         :tooltip (mapv (fn [key] {:field (label key) :type "ordinal"}) visible-keys)}
               :mark {:type "area"
                      :clip true}}
              {:data {:values consts}
@@ -100,7 +107,8 @@
 
 (defn set-fn [key]
   (fn [event]
-    (swap! app-state assoc-in [:model key] (js/parseFloat (.-value (.-target event))))))
+    (swap! app-state assoc-in [:model key] (js/parseFloat (.-value (.-target event))))
+    (swap! app-state assoc-in [:simple-model key] (js/parseFloat (.-value (.-target event))))))
 
 (defn variable-slider [state {:keys [key min max step]}]
   [:tr [:td [:label {:for (str (name key) "-slider")} (str (name key) "=" (key (:model state)))]]
@@ -117,7 +125,7 @@
    [:h4 "Verteilung der Krankheitszustände einer Gesellschaft über den Verlauf der Epidemie"]
    [:p [:i "-> Exponentielles Wachstum erklären"]]
    [:p [:i "-> Sättigung (erst) wenn die meisten die Krankheit überstanden und deshalb immun sind"]]
-   [oz.core/vega-lite (line-plot @app-state)]
+   [oz.core/vega-lite (line-plot (:simple-model @app-state) {:visible-keys [:S :E :I :R :D]})]
    [:p [:i "-> Indem T_c (die durchschnittliche Zeit in Tagen, zwischen zwei Ansteckungen durch einen Infizierten) gesenkt wird, kann die Kurve abgeflacht und der Zeitpunkt an dem das Maximum Erkrankter erreicht wird herausgezögert werden"]]
    [:h4 "Nicht alle Patienten sind schwach symptomatisch"]
    [:p [:i "TODO Wahrscheinlichkeiten ins Diagramm einzeichnen"]]
@@ -125,7 +133,9 @@
    [oz.core/vega-lite (bar-chart @app-state)]
    [:h4 "Das Gesundheitssystem wird an seine Kapazitätsgrenzen kommen"]
    [:p [:i "-> Wenn es nicht gelingt, die Ansteckungsrate hinreichend abzusenken, werden viele Patienten nicht die erforderliche Behandlung bekommen können"]]
-   [oz.core/vega-lite (line-plot @app-state {:y_max 30000})]
+   [oz.core/vega-lite (line-plot (:model @app-state) {:y_max 30000
+                                                      :visible-keys [:S :E :I :K<KC :K>KC :R>KC :X<XC :X>XC :R>XC :R :D]
+                                                      :show-capacity true})]
    [:p [:i "-> Durch verlangsammen der Epidemie kann der Kollaps der Versorgung verhindert werden"]]
    [:p [:i "-> jeder einzelnen von uns ist gefragt…"]]
    [:div (into [:table] (mapv (partial variable-slider @app-state) (p/variables (:model @app-state))))

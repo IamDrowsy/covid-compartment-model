@@ -8,8 +8,8 @@
             :X "Intensivstation"
             :D "Verstorben"
             :K<KC "Krankenhaus"
-            :K>KC "Benötigt Krankenhause, aber überlastet"
-            :X<XC "Intensivestation"
-            :X>XC "Benötigt Intensivestation, aber überlasted"
-            :R>KC "Benötigte Krankenhause, Zustand unklar"
+            :K>KC "Benötigt Krankenhaus, aber überlastet"
+            :X<XC "Intensivstation"
+            :X>XC "Benötigt Intensivstation, aber überlasted"
+            :R>KC "Benötigte Krankenhaus, Zustand unklar"
             :R>XC "Benötigte Intensivstation, Zustand unklar"})

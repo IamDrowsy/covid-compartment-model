@@ -50,12 +50,12 @@
 
 
 (defn line-plot [model &[{:keys [y_max visible-keys show-capacity]}]]
-  (let [values (m/->plot-values model)
+  (let [values (filter #(zero? (rem (:x %) 1)) (m/->plot-values model))
         key->label (zipmap (map :key values) (map :label values))
         consts (if show-capacity (filter #(= (:label %) "const") values) [])]
     {:layer [{:data {:values values}
               :transform [{:filter {:not {:field "label" :oneOf ["const"]}}}]
-              :width 600
+              :width 900
               :height 500
               :encoding {:x {:field "x"
                              :type "quantitative"
@@ -71,11 +71,13 @@
                                           :labelLimit 300
                                           :values (map label visible-keys)}}
                          :order {:field "order" :type "ordinal"}
-                         :tooltip (mapv (fn [key] {:field (label key) :type "ordinal"}) visible-keys)}
+                         :tooltip [{:field "label" :type "nominal"}
+                                   {:field "number" :type "nominal"}
+                                   {:field "Day" :type "nominal"}]}
               :mark {:type "area"
                      :clip true}}
              {:data {:values consts}
-              :width 600
+              :width 900
               :heigh 500
               :encoding {:x {:field "x"
                              :type "quantitative"}
@@ -83,7 +85,7 @@
                              :type "quantitative"}}
               :mark "line"}
              {:data {:values consts}
-              :width 600
+              :width 900
               :heigh 500
               :encoding {:x {:field "x"
                              :type "quantitative"}
@@ -133,7 +135,7 @@
    [oz.core/vega-lite (bar-chart @app-state)]
    [:h4 "Das Gesundheitssystem wird an seine Kapazitätsgrenzen kommen"]
    [:p [:i "-> Wenn es nicht gelingt, die Ansteckungsrate hinreichend abzusenken, werden viele Patienten nicht die erforderliche Behandlung bekommen können"]]
-   [oz.core/vega-lite (line-plot (:model @app-state) {:y_max 30000
+   [oz.core/vega-lite (line-plot (:model @app-state) {:y_max (or (:y_max @app-state) 4000000)
                                                       :visible-keys [:S :E :I :K<KC :K>KC :R>KC :X<XC :X>XC :R>XC :R :D]
                                                       :show-capacity true})]
    [:p [:i "-> Durch verlangsammen der Epidemie kann der Kollaps der Versorgung verhindert werden"]]

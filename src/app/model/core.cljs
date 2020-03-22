@@ -8,6 +8,8 @@
     :seir (seir/init)
     :seikr (seikr/init)))
 
-(defn ->plot-values [model]
-  (reduce into (map-indexed (fn [index model] (p/->plot-point model index)) (take-while #(< 0.5 (+ (:I %) (:E %)))
-                                                                                        (iterate p/step model)))))
+(defn ->plot-values* [model]
+  (reduce into (map-indexed (fn [index model] (p/->plot-point model index)) (take 600 #_#(< 21000 (+ (:I %) (:E %)))
+                                                                              (iterate p/step (p/step model))))))
+
+(def ->plot-values (memoize ->plot-values*))

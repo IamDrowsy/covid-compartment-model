@@ -3,11 +3,11 @@
             [app.conf.labels :refer [label]]))
 
 ;Total Population Number
-(def N 500000)
+(def N 80000000)
 ; Number of Exposed
-(def E_0 1)
+(def E_0 50)
 ; Number of Infected 
-(def I_0 0)
+(def I_0 100)
 ; Number of Susceptible
 (def S_0 (- N I_0))
 ; Number of immune
@@ -16,9 +16,9 @@
 (def a (/ 1 2.5))
 
 ; Medcare capacity
-(def KC 2000)
+(def KC 300000)
 ; ICU capacity
-(def XC 200)
+(def XC 30000)
 
 (defn step [{:keys [T_c T_r p_I->K p_K->X p_X->D p_I->X p_R->D KC XC
                     S E IKX RD K>KC R>KC X>XC R>XC ] :as state}]
@@ -63,8 +63,11 @@
           {}
           (keys all)))
 
-(defn ->plot-point [{:keys [S E I K<KC K>KC X<XC X>XC D R R>KC R>XC KC XC KXC ] :as all} index]
-  (map-indexed (fn [index m] (merge (keys-for-tooltip all) (assoc m :order index :label (label (:key m) "const"))))
+(defn ->plot-point [{:keys [S E I K<KC K>KC X<XC X>XC D R R>KC R>XC KC XC KXC ]} index]
+  (map-indexed (fn [order m] (assoc m :order order
+                                    :label (label (:key m) "const")
+                                    :number (Math/round (:y m))
+                                    "Day" index))
                (reverse [{:x index :y S :key :S}
                          {:x index :y E :key :E}
                          {:x index :y R :key :R}
@@ -86,7 +89,7 @@
    :p_I->K 0.045
    :p_K->X 0.25
    :p_X->D 0.5
-   :S S_0 :I I_0 :R R_0 :E E_0})
+   :S S_0 :IKX I_0 :R R_0 :E E_0})
 
 (defn variables [_]
   [{:key :T_c :min 1 :max 8 :step 0.5}

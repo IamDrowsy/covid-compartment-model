@@ -82,7 +82,7 @@
    :S S_0 :I I_0 :R R_0 :E E_0})
 
 (defn variables [_]
-  [{:key :T_c :min 1 :max 20 :step 0.1}
+  [{:key :T_c :min 1 :max 8 :step 0.5}
    #_{:key :T_r :min 10 :max 15 :step 0.5}])
 
 (defn init []

@@ -48,7 +48,6 @@
                                                                                     :blank :K :X :D])}
                            :sort {}}}}))
 
-
 (defn line-plot [model &[{:keys [y_max visible-keys show-capacity]}]]
   (let [values (filter #(zero? (rem (:x %) 1)) (m/->plot-values model))
         key->label (zipmap (map :key values) (map :label values))
@@ -92,6 +91,43 @@
                          :y {:field "XC"
                              :type "quantitative"}}
               :mark "line"}]}))
+
+(defn delta [values]
+  (->> values
+       (group-by :key) vals
+       (map (fn [values]
+              (->> values
+                   (sort-by :x)
+                   (partition 2 1)
+                   (map (fn [[d1 d0]] (assoc d1 :y (- (:y d0 0) (:y d1 0))))))))
+       (apply concat)))
+
+(defn log-plot [model &[{:keys [visible-keys delta?]}]]
+  (let [values_orig (m/->plot-values model)
+        values (if delta? (delta values_orig) values_orig)
+        key->label (zipmap (map :key values) (map :label values))]
+    {:layer [{:data {:values values}
+              :transform [{:filter {:field "key" :oneOf visible-keys}}
+                          {:filter {:field "y" :gt 0}}] ;;required for log scale
+              :width 900
+              :height 500
+              :encoding {:x {:field "x"
+                             :type "quantitative"
+                             :axis {:title "Days"}}
+                         :y {:field "y"
+                             :type "quantitative"
+                             :scale {:type "log"}
+                             :axis {:title "People"}}
+                         :color {:field "label" :type "nominal"
+                                 :scale {:range (vals (sort-by #(key->label (key %)) (select-keys compartment->color (keys key->label))))}
+                                 :legend {:title "Legende" :orient :right
+                                          :labelLimit 300
+                                          :values (map label visible-keys)}}
+                         :order {:field "order" :type "ordinal"}
+                         :tooltip [{:field "label" :type "nominal"}
+                                   {:field "number" :type "nominal"}
+                                   {:field "Day" :type "nominal"}]}
+              :mark {:type "line"}}]}))
 
 (defn header
   []
@@ -143,5 +179,10 @@
    [:div (into [:table] (mapv (partial variable-slider @app-state) (p/variables (:model @app-state))))
          [:div (gstring/format "R0=T_r/T_c=%.2f" (/ (:T_r (:model @app-state)) (:T_c (:model @app-state))))]]
    [:h4 "TODO Verzögerung der Epidemie, so dass neue wirksamere Therapien und Impfungen entwickelt werden können"]
+   [:h4 "Wie kann man die Wirksamkeit von Maßnahmen bzw. das Ende der Epidemie erkennen?"]
+   [:p [:i "-> Betrachtung des Anstiegs auf logarithmischer Skala"]]
+   [oz.core/vega-lite (log-plot (:model @app-state) {:visible-keys [:I :D]})]
+   [:p [:i "-> Früher erkennbar, wenn man den direkt den Logarithmus des " [:b "Anstiegs"] " plottet (Neuinfektionen-Gesundete bzw. hinzugekommene Tode)"]]
+   [oz.core/vega-lite (log-plot (:model @app-state) {:visible-keys [:I :D] :delta? true})]
    (sources)])
 

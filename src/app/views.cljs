@@ -1,6 +1,7 @@
 (ns app.views
   (:require [oz.core :as oz]
             [reagent.core :as r]
+            [ajax.core :refer [GET json-response-format]]
             [goog.string :as gstring]
             [app.model.core :as m]
             [app.model.protocol :as p]
@@ -92,14 +93,14 @@
                              :type "quantitative"}}
               :mark "line"}]}))
 
-(defn delta [values]
+(defn delta [values &[{:keys [x y key] :or {x :x y :y key :key}}]]
   (->> values
-       (group-by :key) vals
+       (group-by #(get % key)) vals
        (map (fn [values]
               (->> values
-                   (sort-by :x)
+                   (sort-by #(get % x))
                    (partition 2 1)
-                   (map (fn [[d1 d0]] (assoc d1 :y (- (:y d0 0) (:y d1 0))))))))
+                   (map (fn [[d1 d0]] (assoc d1 y (- (get d0 y 0) (get d1 y 0))))))))
        (apply concat)))
 
 (defn log-plot [model &[{:keys [visible-keys delta?]}]]
@@ -121,13 +122,34 @@
                          :color {:field "label" :type "nominal"
                                  :scale {:range (vals (sort-by #(key->label (key %)) (select-keys compartment->color (keys key->label))))}
                                  :legend {:title "Legende" :orient :right
-                                          :labelLimit 300
                                           :values (map label visible-keys)}}
                          :order {:field "order" :type "ordinal"}
                          :tooltip [{:field "label" :type "nominal"}
                                    {:field "number" :type "nominal"}
                                    {:field "Day" :type "nominal"}]}
               :mark {:type "line"}}]}))
+
+(defn real-data-plot [&[{:keys [country delta? log? width height] :or {country "DE" width 900 height 500}}]]
+  (if-not (:real-data @app-state)
+          (GET "https://open-covid-19.github.io/data/data_minimal.json"
+               {:response-format (json-response-format {:keywords? false})
+                :handler #(swap! app-state assoc :real-data %)}))
+  {:layer (for [field ["Confirmed" "Deaths"]
+                :let [values_orig (:real-data @app-state [])
+                      values (if delta? (delta values_orig {:x "Date" :y field :key "Key"}) values_orig)]]
+               {:data {:values values}
+                :transform (remove nil? [{:filter {:field "Key" :oneOf [country]}}
+                                         (if log? {:filter {:field field :gt 0}})])
+                :width width
+                :height height
+                :mark {:type "point"
+                       :shape (get {"Confirmed" "triangle" "Deaths" "square"} field)
+                       :color (get {"Confirmed" :orange "Deaths" :red} field)}
+                :encoding {:x {:field "Date" :type "temporal" :timeUnit "yearmonthdate"}
+                           :y {:field field :type "quantitative"
+                               :scale {:type (if log? "log" "linear")}}}})})
+                             
+
 
 (defn header
   []
@@ -184,5 +206,13 @@
    [oz.core/vega-lite (log-plot (:model @app-state) {:visible-keys [:I :D]})]
    [:p [:i "-> Früher erkennbar, wenn man den direkt den Logarithmus des " [:b "Anstiegs"] " plottet (Neuinfektionen-Gesundete bzw. hinzugekommene Tode)"]]
    [oz.core/vega-lite (log-plot (:model @app-state) {:visible-keys [:I :D] :delta? true})]
+   [:h4 [:a {:href "https://github.com/open-covid-19/data#use-the-data"} "Aktuelle Zahlen"]]
+   [oz.core/vega-lite (real-data-plot {:country "DE" :delta? false :log? false})]
+   [:h4 "Vergleich der Daten verschiedener Länder"]
+   [:div {:style {:display "flex"}}
+         (for [country ["CN" "IT" "ES" "DE" "FR" "US"]]
+              [:div [:h5 country]
+                    [oz.core/vega-lite (real-data-plot {:country country :delta? false :log? false :width 225 :height 125})]
+                    [oz.core/vega-lite (real-data-plot {:country country :delta? true :log? true :width 225 :height 125})]])]
    (sources)])
 
